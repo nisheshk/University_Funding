@@ -1,0 +1,25 @@
+2020-03-13 00:15:34,188 ERROR campaign.api.views uncaught exception: Traceback (most recent call last):
+  File "/home/ltf/Documents/GITLAB/University_Fuding/uWinFundMe_backend/src/uni_gofundme/campaign/api/views.py", line 103, in post
+    serializer.save()
+  File "/home/ltf/Documents/univeristy_gofundme/lib/python3.6/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+  File "/home/ltf/Documents/GITLAB/University_Fuding/uWinFundMe_backend/src/uni_gofundme/campaign/api/serializers.py", line 113, in create
+    CampaignModel(**obj).save()
+  File "/home/ltf/Documents/univeristy_gofundme/lib/python3.6/site-packages/django/db/models/base.py", line 500, in __init__
+    raise TypeError("%s() got an unexpected keyword argument '%s'" % (cls.__name__, kwarg))
+TypeError: CampaignModel() got an unexpected keyword argument 'titl'
+
+2020-03-13 01:37:50,381 ERROR campaign.api.views Error: Traceback (most recent call last):
+  File "/home/ltf/Documents/GITLAB/University_Fuding/uWinFundMe_backend/src/uni_gofundme/campaign/api/views.py", line 95, in post
+    serializer.save()
+  File "/home/ltf/Documents/univeristy_gofundme/lib/python3.6/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+  File "/home/ltf/Documents/GITLAB/University_Fuding/uWinFundMe_backend/src/uni_gofundme/campaign/api/serializers.py", line 112, in create
+    obj['created_by_id'] = self.created_or_modified_by()
+  File "/home/ltf/Documents/GITLAB/University_Fuding/uWinFundMe_backend/src/uni_gofundme/campaign/api/serializers.py", line 53, in created_or_modified_by
+    username = request.session['username']
+  File "/home/ltf/Documents/univeristy_gofundme/lib/python3.6/site-packages/django/contrib/sessions/backends/base.py", line 64, in __getitem__
+    return self._session[key]
+KeyError: 'username'
+
+2020-03-13 01:40:18,376 ERROR django.server "POST /api/campaign/ HTTP/1.1" 500 21435
