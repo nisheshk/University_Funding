@@ -41,7 +41,7 @@ CRSF_COOKIE_SAMESITE = None
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'h20o1!ox%3tci85p+c@qw$esol5jg#&6hz@gi9yif-wo%p0#!s'
+SECRET_KEY = "h20o1!ox%3tci85p+c@qw$esol5jg#&6hz@gi9yif-wo%p0#!s"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -163,9 +163,9 @@ USE_S3 = True
 
 if USE_S3:
     # aws settings
-    AWS_ACCESS_KEY_ID = 'AKIAZZ2SQWTT3H5QOX5G'
-    AWS_SECRET_ACCESS_KEY = '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'
-    AWS_STORAGE_BUCKET_NAME = 'django-static-uwinfundme'
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
     AWS_DEFAULT_ACL = None
     AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
     AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}

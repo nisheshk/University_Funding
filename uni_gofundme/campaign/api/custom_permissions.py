@@ -30,8 +30,13 @@ class CampaignPutDelPermission(permissions.BasePermission):
                                 request.user or request.user.type == 'm') )
 
     def has_status_update_permission(self, request, view, obj, upd_query):
+        print (upd_query)
+        print (upd_query['id'])
+        print (obj.id)
+
         if 'status_type' in upd_query:
             upd_status_id = CampaignStatusModel.objects.filter(status=upd_query['status_type'])
+            print (upd_status_id)
             return (upd_status_id[0].id != obj.id and \
                     request.user.type == 'm') or (upd_status_id[0].id == obj.id)
 

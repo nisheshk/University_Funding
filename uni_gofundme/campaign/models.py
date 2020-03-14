@@ -26,8 +26,8 @@ def upload_image(instance, filename):
 
 
 class CampaignModel(models.Model):
-    title           = models.CharField(max_length = 200, blank=False, null = True)
-    description     = models.TextField(blank=False, null = True)
+    title           = models.CharField(max_length = 200, blank=False, null = False)
+    description     = models.TextField(null = False, blank=False)
     unit_id         = models.ForeignKey(PriceUnitModel, on_delete=models.CASCADE, db_column='unit_id', null=True, blank=True, related_name='unit_type')
     amount          = models.DecimalField(max_digits=19, decimal_places=2, blank = True, null=True)
     inventory       = ArrayField(models.CharField(max_length=300), blank=True, null=True)

@@ -1,8 +1,8 @@
-from rest_framework.generics    import ListAPIView
 from campaign.models            import CampaignModel
 from accounts.models            import User
 from campaign.api.serializers   import ( CampaignModelSerializer,
-                                        CampaignModelGetSerializer)
+                                        CampaignModelGetSerializer,
+                                        )
 from rest_framework.views       import APIView
 from rest_framework             import serializers
 from rest_framework.response    import Response
@@ -12,7 +12,7 @@ import logging
 import traceback
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers     import MultiPartParser, FormParser, JSONParser
-
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class RetrieveActiveCampaigns(APIView):
 
                 Parameters:
                 -----------
-                request: Django Rest Fraework Request
+                request: Django Rest Framework Request
 
                 Returns
                 --------
@@ -39,8 +39,8 @@ class RetrieveActiveCampaigns(APIView):
             try:
                 obj = CampaignModel.objects.all()
                 obj = obj.filter(status_id=self.active_status)
-                serializer= CampaignModelGetSerializer(obj, many= True, context=\
-                                                        {"request":self.request})
+                serializer= CampaignModelGetSerializer(obj, many= True, context\
+                                                      ={"request":self.request})
 
                 return Response(serializer.data)
 
@@ -59,7 +59,7 @@ class RetrieveOnWaitingCampaigns(APIView):
 
             Parameters:
             -----------
-            request: Django Rest Fraework Request
+            request: Django Rest Framework Request
 
             Returns
             --------
@@ -85,11 +85,13 @@ class RetrieveOnWaitingCampaigns(APIView):
                 #If user type is mgo, all unapproved campaign should be returned
                 elif user_type == "m":
                     obj = obj.filter(status_id=status_id)
+
+                #If user type is donor; permission should be denied.
                 else:
                     return Response({"Error": "Permission Denied"}, status=400)
 
-                serializer= CampaignModelGetSerializer(obj, many= True, context=\
-                                                    {"request":self.request})
+                serializer= CampaignModelGetSerializer(obj, many= True, context\
+                                                      ={"request":self.request})
                 return Response(serializer.data)
 
         except:
@@ -103,6 +105,20 @@ class CampaignRetrieveApiView(APIView):
     permission_classes = []
 
     def post(self, request, format=None):
+        """
+            This post method retrieves all the campaigns and can handle some
+            specific filter values
+
+            Parameters:
+            -----------
+            request: Django Rest Framework Request
+
+            Returns
+            --------
+            serializer.data : Response
+                serializer.data contains the serialized data which is the
+                part of API output
+        """
         try:
             query = request.data
             obj = CampaignModel.objects.all()
@@ -120,35 +136,70 @@ class CampaignRetrieveApiView(APIView):
 class CampaignCUDApiView(APIView):
     authentication_classes = [JWTAuthentication]
     parser_classes = (MultiPartParser, FormParser, JSONParser)
+    permission_denied_response = Response({"Error":"Permission123 Denied"},\
+                                            status=400)
 
     def post(self, request, format=None):
-        # try:
-            if CampaignPostPermission().has_permission(request, CampaignCUDApiView):
+        """
+            This post method retrieves help fundraiser and MGO post the
+            campaigns.
+
+            Parameters:
+            -----------
+            request: Django Rest Framework Request
+
+            Returns
+            --------
+            serializer.data : Response
+                serializer.data contains the serialized data which is the
+                part of API output
+        """
+        try:
+            #Go to custom_permissions.py for more details about the permission.
+            if CampaignPostPermission().has_permission(request, \
+                                                        CampaignCUDApiView):
                 post_data = request.data
-                print (post_data)
-                print (request.session)
-                print ("Session variable print ******", request.session['username'])
-                print ("************")
-                print (post_data.get('image'))
+                print (request.session["username"])
                 if CampaignPostPermission().has_status_update_permission\
                     (request, CampaignCUDApiView, post_data):
-                    serializer  = CampaignModelSerializer(data=post_data,context=\
-                                                            {"request":self.request})
+                    serializer  = CampaignModelSerializer(data=post_data,\
+                                                          context={"request":\
+                                                          self.request})
                     if serializer.is_valid():
                         serializer.save()
-                        return Response({"Success": "Campaign posted"}, status=201)
-                    return Response(serializer.errors, status=400)
+                        return Response({"Success":"Campaign posted"},status=201)
+                    return Response(serializer.errors,status=400)
 
-            return Response({"Error": "Permission denied"}, status=400)
+            return self.permission_denied_response
 
-        # except:
-        #     logger.error("Error: %s", traceback.format_exc())
-        #     return Response({"Error": "Check the logs"})
+        except:
+            logger.error("Error: %s", traceback.format_exc())
+            return Response({"Error": "Check the logs"})
 
 
     def put(self, request, format=None):
+        """
+            This put method retrieves help fundraiser and MGO to edit the
+            campaigns.
+
+            Parameters:
+            -----------
+            request: Django Rest Framework Request
+
+            Returns
+            --------
+            serializer.data : Response
+                serializer.data contains the serialized data which is the
+                part of API output
+        """
         try:
-            query = request.data
+            query = request.data.copy()
+            print ("****************PUT QUERY",  query)
+            if query.get('image', None):
+                if not isinstance(query['image'] , InMemoryUploadedFile):
+                    del query['image']
+            print ("****************PUT QUERY",  query)
+            print ("\n\n")
             if 'id' in query:
                 obj = CampaignModel.objects.filter(pk=query['id']).distinct()
                 print (obj)
@@ -157,15 +208,16 @@ class CampaignCUDApiView(APIView):
                             (request, CampaignCUDApiView, obj[0]) and\
                         CampaignPutDelPermission().has_status_update_permission\
                             (request, CampaignCUDApiView, obj[0], query):
-                        serializer = CampaignModelSerializer( obj , data=query, \
-                                                            context={"request":self.request})
+                        serializer = CampaignModelSerializer( obj , data=query,\
+                                                            context={"request":\
+                                                            self.request})
                         if serializer.is_valid():
                             serializer.save()
                             return Response({"Success": "Campaign updated"}, \
                                             status=201)
                         return Response(serializer.errors, status = 400)
 
-                    return Response({"Error": "Permission denied"}, status = 400)
+                    return Response({"Error":"Permission denied"}, status = 400)
             return Response({"Error":"ID does not exist"}, status = 400)
 
         except:

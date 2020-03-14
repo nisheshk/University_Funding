@@ -14,15 +14,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path, include
-from .views import ( CampaignCUDApiView,
-                     CampaignRetrieveApiView,
-                     RetrieveActiveCampaigns,
-                     RetrieveOnWaitingCampaigns,
-                    )
+from .views import CampaignMGOAction
+
 
 urlpatterns = [
-    path('api/campaign/', CampaignCUDApiView.as_view(), ),
-    path('api/campaign/list', CampaignRetrieveApiView.as_view(), ),
-    path('api/campaign/active', RetrieveActiveCampaigns.as_view(), ),
-    path('api/campaign/awaiting', RetrieveOnWaitingCampaigns.as_view(), ),
+    path('api/mgo/action', CampaignMGOAction.as_view(), ),
 ]

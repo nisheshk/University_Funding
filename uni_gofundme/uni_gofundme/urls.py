@@ -20,4 +20,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('accounts.urls')),
     path('', include('campaign.api.urls')),
+    path('', include('mgo.api.urls')),
 ]
