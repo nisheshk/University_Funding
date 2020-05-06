@@ -16,7 +16,8 @@ Including another URLconf
 from django.urls import path, include
 from .views import CampaignMGOAction
 
+app_name = "mgo"
 
 urlpatterns = [
-    path('api/mgo/action', CampaignMGOAction.as_view(), ),
+    path('api/mgo/action', CampaignMGOAction.as_view(), name="api-mgo-action"),
 ]

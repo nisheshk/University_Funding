@@ -31,7 +31,6 @@ class CampaignModelGetSerializer(serializers.ModelSerializer):
                   ]
 
     def retrieve(self, validated_data):
-        print ("Entered")
         return validated_data
 
 class CampaignModelSerializer(serializers.ModelSerializer):
@@ -56,15 +55,14 @@ class CampaignModelSerializer(serializers.ModelSerializer):
         request = self.context['request']
         if request.method == "POST":
             return "Waiting for approval"
+        if request.method == "POST" and request.user.type == "m":
+            return "Approved"
 
-    def created_or_modified_by(self):
-        request = self.context['request']
-        # print (request.session['username'])
-        username = request.session['username']
-        print (username)
-        obj = User.objects.filter(username=username).distinct()
-        print (obj)
-        return obj[0]
+    # def created_or_modified_by(self):
+    #     request = self.context['request']
+    #     username = request.session['username']
+    #     obj = User.objects.filter(username=username).distinct()
+    #     return obj[0]
 
     def validate_status_type(self, val):
         obj = CampaignStatusModel.objects.filter(status=val).distinct()
@@ -119,21 +117,19 @@ class CampaignModelSerializer(serializers.ModelSerializer):
         return obj
 
     def create(self, validated_data):
-        print (validated_data)
         obj = self.set_attributes(validated_data)
-        obj['created_by_id'] = self.created_or_modified_by()
-        CampaignModel(**obj).save()
-        return obj
+        obj['created_by_id'] = self.context['request'].user
+        save_obj = CampaignModel(**obj)
+        save_obj.save()
+        return save_obj.id
 
     def update(self, update_obj, validated_data):
         obj = update_obj[0]
-        print (obj.title)
-        print (validated_data)
         obj.title = validated_data.get('title',None)
         obj.amount = validated_data.get('amount',None)
         obj.description = validated_data.get('description',None)
         obj.inventory = validated_data.get('inventory',None)
-        obj.modified_by_id = self.created_or_modified_by()
+        obj.modified_by_id = self.context['request'].user
         obj.modified_on = timezone.now()
         obj.unit_id = validated_data.get('unit_type',None)
         if validated_data.get("status_type", None):
@@ -142,6 +138,5 @@ class CampaignModelSerializer(serializers.ModelSerializer):
         if validated_data.get("image",None):
             obj.image = validated_data.get("image")
 
-        print (obj.title, obj.amount)
         obj.save()
         return obj

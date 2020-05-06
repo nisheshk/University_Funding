@@ -13,6 +13,7 @@ import traceback
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers     import MultiPartParser, FormParser, JSONParser
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from .api_call import CampaignRetrieveAPICall
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,6 @@ class RetrieveActiveCampaigns(APIView):
                 obj = obj.filter(status_id=self.active_status)
                 serializer= CampaignModelGetSerializer(obj, many= True, context\
                                                       ={"request":self.request})
-
                 return Response(serializer.data)
 
             except:
@@ -50,7 +50,6 @@ class RetrieveActiveCampaigns(APIView):
 
 
 class RetrieveOnWaitingCampaigns(APIView):
-    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
         """
@@ -71,10 +70,12 @@ class RetrieveOnWaitingCampaigns(APIView):
             status_id = 0
             obj = CampaignModel.objects.all()
 
+
+            user_type = request.user.type
+            user_id = request.user.id
             #Fetching the values from the session variables.
-            user_type = request.session.get("user_type", None)
-            user_id = request.session.get("user_id", None)
-            print (user_type)
+            #user_type = request.session.get("user_type", None)
+            #user_id = request.session.get("user_id", None)
             if user_id:
 
                 #If user type is fundraiser, only that particular user's
@@ -88,7 +89,7 @@ class RetrieveOnWaitingCampaigns(APIView):
 
                 #If user type is donor; permission should be denied.
                 else:
-                    return Response({"Error": "Permission Denied"}, status=400)
+                    return Response({"Error": "Permission Denied"}, status=401)
 
                 serializer= CampaignModelGetSerializer(obj, many= True, context\
                                                       ={"request":self.request})
@@ -136,8 +137,8 @@ class CampaignRetrieveApiView(APIView):
 class CampaignCUDApiView(APIView):
     authentication_classes = [JWTAuthentication]
     parser_classes = (MultiPartParser, FormParser, JSONParser)
-    permission_denied_response = Response({"Error":"Permission123 Denied"},\
-                                            status=400)
+    permission_denied_response = Response({"Error":"Permission Denied"},\
+                                            status=401)
 
     def post(self, request, format=None):
         """
@@ -159,15 +160,19 @@ class CampaignCUDApiView(APIView):
             if CampaignPostPermission().has_permission(request, \
                                                         CampaignCUDApiView):
                 post_data = request.data
-                print (request.session["username"])
                 if CampaignPostPermission().has_status_update_permission\
                     (request, CampaignCUDApiView, post_data):
                     serializer  = CampaignModelSerializer(data=post_data,\
                                                           context={"request":\
                                                           self.request})
                     if serializer.is_valid():
-                        serializer.save()
-                        return Response({"Success":"Campaign posted"},status=201)
+                        id = serializer.save()
+                        #If front-end needs object back,we cannot return back
+                        #the serialized data since the format of serialized data
+                        #is not what front end expects, hence an internal API
+                        #call is required. Uncomment below, if required.
+                        #resp = CampaignRetrieveAPICall.get_campaign_by_id(id)
+                        return Response({"Success":"Campaign Posted"},status=201)
                     return Response(serializer.errors,status=400)
 
             return self.permission_denied_response
@@ -194,16 +199,13 @@ class CampaignCUDApiView(APIView):
         """
         try:
             query = request.data.copy()
-            print ("****************PUT QUERY",  query)
             if query.get('image', None):
                 if not isinstance(query['image'] , InMemoryUploadedFile):
                     del query['image']
-            print ("****************PUT QUERY",  query)
-            print ("\n\n")
             if 'id' in query:
                 obj = CampaignModel.objects.filter(pk=query['id']).distinct()
-                print (obj)
                 if obj.exists():
+
                     if CampaignPutDelPermission().has_object_permission\
                             (request, CampaignCUDApiView, obj[0]) and\
                         CampaignPutDelPermission().has_status_update_permission\
@@ -214,11 +216,11 @@ class CampaignCUDApiView(APIView):
                         if serializer.is_valid():
                             serializer.save()
                             return Response({"Success": "Campaign updated"}, \
-                                            status=201)
+                                            status=200)
                         return Response(serializer.errors, status = 400)
 
-                    return Response({"Error":"Permission denied"}, status = 400)
-            return Response({"Error":"ID does not exist"}, status = 400)
+                    return Response({"Error":"Permission Denied"}, status = 401)
+            return Response({"Error":"Campaign not found"}, status = 400)
 
         except:
             logger.error("Error: %s", traceback.format_exc())
@@ -226,19 +228,33 @@ class CampaignCUDApiView(APIView):
 
 
     def delete(self, request, format=None):
+        """
+            This put method retrieves help fundraiser and MGO to edit the
+            campaigns.
+
+            Parameters:
+            -----------
+            request: Django Rest Framework Request
+
+            Returns
+            --------
+            serializer.data : Response
+                serializer.data contains the serialized data which is the
+                part of API output
+        """
         try:
             query = request.GET
-            print (query)
             if 'id' in query:
                 obj = CampaignModel.objects.filter(pk=query['id']).distinct()
                 if obj.exists():
                     if CampaignPutDelPermission().has_object_permission\
                                     (request, CampaignCUDApiView, obj[0]):
                         obj.delete()
-                        return Response({"Success": "Campaign deleted"}, status=201)
+                        return Response({"Success": "Campaign deleted"}, status=200)
 
-                    return Response({"Error": "Permission denied"}, status = 400)
-            return Response({"Error": "Campaign not found"}, status = 400)
+                    return Response({"Error": "Permission Denied"}, status = 401)
+            else:
+                return Response({"Error": "Campaign not found"}, status = 400)
 
         except:
             logger.error("Error: %s", traceback.format_exc())

@@ -17,7 +17,6 @@ class GenerateToken(TokenObtainPairSerializer):
         data['first_name'] = user.first_name
         data['last_name'] = user.last_name
         data['user_type'] = user.type
-        print (data)
         #data['groups'] = user.groups.values_list('name', flat=True)
         return data
 

@@ -61,6 +61,8 @@ INSTALLED_APPS = [
     #Created apps
     'accounts',
     'campaign',
+    #delete later
+    'testing',
 
     #Third party apps
     'rest_framework',

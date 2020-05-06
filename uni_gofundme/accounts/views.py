@@ -49,7 +49,7 @@ class LoginView(APIView, GenerateToken):
             -----------
             request:
                 Rest Framework request unlike normal Django HttpRequest
-                request is isherited from HttpRequest, but with exra features.
+                request is inherited from HttpRequest, but with exra features.
 
             Returns
             --------
@@ -64,8 +64,9 @@ class LoginView(APIView, GenerateToken):
         try:
 
             #Check is user is already authenticated
+            #Changes: This logic is not working
             if request.user.is_authenticated:
-                return Response({'Error':'User is already authenticated'}, status=200)
+                return Response({'Error':'User is already authenticated'}, status=403)
 
             username = request.data['username']
             password = request.data['password']
@@ -86,9 +87,6 @@ class LoginView(APIView, GenerateToken):
                 token = self.return_token(user)
                 self.set_cookie_values(request, token)
                 response = Response(token, status=200)
-                response.set_cookie("coockie","my_cookie",
-                                expires=exp_time_mins,
-                                httponly=True)
                 return response
 
             return Response({'Error':'Incorrect email address'}, status=401)
@@ -98,8 +96,8 @@ class LoginView(APIView, GenerateToken):
             return Response({"Error": "Check the logs"})
 
 class LogoutView(APIView):
-    authentication_classes  = []
-    permission_classes      = []
+    # authentication_classes  = []
+    # permission_classes      = []
 
     def get(self, request, format=None):
 
@@ -117,9 +115,13 @@ class LogoutView(APIView):
 
         try:
             #Clear the session from the database
-            if request.session.has_key('user_id'):
-                request.session.flush()
-            return Response({"Success":"Logged out"}, status = 200)
+            if request.user.is_authenticated:
+                if request.session.has_key('user_id'):
+                    request.session.flush()
+                return Response({"Success":"Logged out"}, status = 200)
+            else:
+                return Response({"Error":"User should be logged in order to "
+                                    "log out."}, status = 403)
         except:
             logger.error("Error: %s", traceback.format_exc())
             return Response({"Error": "Check the logs"})

@@ -20,9 +20,11 @@ from .views import ( CampaignCUDApiView,
                      RetrieveOnWaitingCampaigns,
                     )
 
+app_name = "campaign"
+
 urlpatterns = [
-    path('api/campaign/', CampaignCUDApiView.as_view(), ),
-    path('api/campaign/list', CampaignRetrieveApiView.as_view(), ),
-    path('api/campaign/active', RetrieveActiveCampaigns.as_view(), ),
-    path('api/campaign/awaiting', RetrieveOnWaitingCampaigns.as_view(), ),
+    path('api/campaign/', CampaignCUDApiView.as_view(), name="api-campaign"),
+    path('api/campaign/list', CampaignRetrieveApiView.as_view(), name="api-campaign-list"),
+    path('api/campaign/active', RetrieveActiveCampaigns.as_view(), name="api-campaign-active"),
+    path('api/campaign/awaiting', RetrieveOnWaitingCampaigns.as_view(), name="api-campaign-awaiting"),
 ]
