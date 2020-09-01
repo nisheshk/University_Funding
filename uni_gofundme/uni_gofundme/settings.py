@@ -115,9 +115,9 @@ WSGI_APPLICATION = 'uni_gofundme.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fundme_university_windsor',
-        'USER': 'postgres',
-        'PASSWORD': 'minda@123',
+        'NAME': os.getenv("database_name"),
+        'USER': os.getenv("database_username"),
+        'PASSWORD': os.getenv("database_password"),
         'HOST': 'localhost',
         'PORT': '5432',
     }
