@@ -31,7 +31,7 @@ class CampaignPutDelPermission(permissions.BasePermission):
 
         if 'status_type' in upd_query:
             upd_status_id = CampaignStatusModel.objects.filter(status=upd_query['status_type'])
-            return (upd_status_id[0].id != obj.id and \
-                    request.user.type == 'm') or (upd_status_id[0].id == obj.id)
 
+            return (upd_status_id[0].id != obj.status_id.id and \
+                    request.user.type == 'm') or (upd_status_id[0].id == obj.status_id.id)
         return 1

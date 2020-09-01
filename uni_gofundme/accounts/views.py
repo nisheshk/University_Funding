@@ -96,8 +96,8 @@ class LoginView(APIView, GenerateToken):
             return Response({"Error": "Check the logs"})
 
 class LogoutView(APIView):
-    # authentication_classes  = []
-    # permission_classes      = []
+    authentication_classes  = []
+    permission_classes      = []
 
     def get(self, request, format=None):
 

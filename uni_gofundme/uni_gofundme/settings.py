@@ -20,7 +20,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = False
-
+APPEND_SLASH = True
 
 CORS_ALLOW_HEADERS = [
     'accept',
@@ -80,7 +80,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    #'accounts.middleware.OneSessionPerUserMiddleware',
 
 
 ]

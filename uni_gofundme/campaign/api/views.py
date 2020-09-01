@@ -157,6 +157,7 @@ class CampaignCUDApiView(APIView):
         """
         try:
             #Go to custom_permissions.py for more details about the permission.
+
             if CampaignPostPermission().has_permission(request, \
                                                         CampaignCUDApiView):
                 post_data = request.data
@@ -210,6 +211,7 @@ class CampaignCUDApiView(APIView):
                             (request, CampaignCUDApiView, obj[0]) and\
                         CampaignPutDelPermission().has_status_update_permission\
                             (request, CampaignCUDApiView, obj[0], query):
+
                         serializer = CampaignModelSerializer( obj , data=query,\
                                                             context={"request":\
                                                             self.request})

@@ -118,7 +118,11 @@ class CampaignModelSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         obj = self.set_attributes(validated_data)
-        obj['created_by_id'] = self.context['request'].user
+        user = self.context['request'].user
+        print ("User type is", user.type)
+        if user.type == "m":
+            obj['status_id'] = CampaignStatusModel(id = 1)
+        obj['created_by_id'] = user
         save_obj = CampaignModel(**obj)
         save_obj.save()
         return save_obj.id
